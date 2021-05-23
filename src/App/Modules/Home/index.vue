@@ -25,12 +25,12 @@
     <div class="continents-list">
       <div class="title">Continents:</div>
       <div v-if="GET_CONTINENTS && GET_CONTINENTS.length > 0">
-        <div v-for="continent of GET_CONTINENTS" :key="continent.code">
+        <div v-for="continent of GET_CONTINENTS" :key="'c-'+continent.code">
           <div class="continent" @click="expandCountriesList(continent)">
             {{ continent.name }} +
           </div>
           <div class="continents-countries" v-if="expandedContinent == continent.code">
-            <div class="country" v-for="country of continent.countries" :key="country.code">
+            <div class="country" v-for="country of continent.countries" :key="'country-'+country.code">
               <span>{{ country.name }}</span>
             </div>
           </div>
@@ -42,20 +42,31 @@
 
 <script>
 import AppStore from "@/store";
-import { mapGetters } from "vuex";
 import { mixin as clickaway } from "vue-clickaway";
+import CountriesAPI from "@/App/_shared/services/CountriesAPI";
+import CountryModel from "@/App/_shared/interfaces/orm/models/country"
+import ContinentModel from "@/App/_shared/interfaces/orm/models/continent"
 
 export default {
   mixins: [clickaway],
   async beforeRouteEnter(to, from, next) {
-    await AppStore.dispatch("FETCH_ALL_CONTINENTS");
-    await AppStore.dispatch("FETCH_ALL_COUNTRIES");
+    const continents = await CountriesAPI.getAll();
+    const countries = await CountriesAPI.getAllCountries();
+    console.log(continents, countries);
+
+    ContinentModel.insert({data: continents})
+    CountryModel.insert({data: countries})
+    
+  
     next();
   },
   data: () => ({
     targetCountry: null,
     contryName: null,
-    expandedContinent: null
+    expandedContinent: null,
+
+    GET_CONTINENTS: ContinentModel.all(),
+    GET_COUNTRIES: CountryModel.all(),
   }),
   methods: {
     initCountryEdit(country) {
@@ -80,9 +91,6 @@ export default {
     expandCountriesList(continent) {
       this.expandedContinent = continent.code 
     },
-  },
-  computed: {
-    ...mapGetters(["GET_CONTINENTS", "GET_COUNTRIES"]),
   },
 };
 </script>

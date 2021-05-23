@@ -1,5 +1,5 @@
 import { Model } from "@vuex-orm/core"
-import { Continent } from "./continent"
+import Continent from "./continent"
 
 export default class Country extends Model{
   static entity = 'country'
@@ -10,7 +10,7 @@ export default class Country extends Model{
       phone: this.attr(''),
       capital: this.attr(''),
       currency:this.attr(''),
-      continent: this.belongsTo(Continent, 'code')
+      continent: this.hasOne(Continent, 'name')
     }
   }
 }
